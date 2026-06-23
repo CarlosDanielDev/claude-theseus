@@ -1,0 +1,58 @@
+# theseus
+
+A wizard TUI that rebuilds a Claude Code environment from a known-good setup —
+marketplaces, plugins, MCP servers, and a project `.claude/` scaffold — in one
+guided pass.
+
+Named for the ship of Theseus: replace every plank and it's still your setup.
+
+## Run
+
+```bash
+npx claude-theseus            # interactive wizard
+# or, from a clone:
+npm install && npm start
+```
+
+## What it does
+
+Walks four steps, each a checkbox list preselected to the full setup:
+
+1. **Marketplaces** — `claude plugin marketplace add` for 5 registries
+2. **Plugins** — `claude plugin install` for the core 14 (superpowers, caveman,
+   ponytail, figma, code-review, security-guidance, LSP backends, …)
+3. **MCP servers** — `claude mcp add` for obsidian / context7 / figma
+4. **Project scaffold** — writes a Maestro-style `.claude/` (skills, commands,
+   agents) into the target project
+
+Then a review screen lists every action before anything runs.
+
+## Controls
+
+`↑↓` move · `space` toggle · `a` all · `n` none · `→` next · `←` back ·
+`d` dry-run · `enter`/`r` run · `q` quit
+
+## Flags
+
+```
+--dry-run         start in dry-run (preview, no execution)
+--target <dir>    where to scaffold .claude/ (default: cwd)
+--print-plan      print the default plan and exit (no TUI)
+--yes             run the full default setup headlessly
+-h, --help        help
+```
+
+`--print-plan` and `--yes` are scriptable, no-TTY paths. Combine `--yes
+--dry-run` to preview the whole run without touching anything.
+
+## Edit the setup
+
+Everything lives in `src/catalog.js` — add a marketplace, flip a plugin's
+default `selected`, change an MCP URL, or add a scaffold file. No other code
+changes needed.
+
+## Test
+
+```bash
+npm test    # plan shape + real scaffold writes, no CLI/network
+```
