@@ -1,6 +1,6 @@
 // Builds the task list from selections and executes it (or prints it on dry-run).
 // Tasks are either a `claude` subprocess or a local file-scaffold action.
-import { spawn } from 'node:child_process';
+import spawn from 'cross-spawn';
 import { writeFile, mkdir, readFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -49,9 +49,17 @@ export function runTask(task, { dryRun, onLog }) {
         return { ok: false, code: 1 };
       });
   }
+  // Defense-in-depth: catalog is user-editable, so reject any arg with shell
+  // metacharacters before it reaches the process (cross-spawn never invokes a
+  // shell, but this keeps the contract explicit if that ever changes).
+  const bad = task.argv.find((a) => !/^[\w.:/@=-]+$/.test(a));
+  if (bad !== undefined) {
+    onLog?.(`rejected unsafe argument: ${bad}`);
+    return Promise.resolve({ ok: false, code: 1 });
+  }
   return new Promise((res) => {
-    // shell:true so Windows resolves claude.cmd/.ps1 shim (ENOENT otherwise).
-    const child = spawn('claude', task.argv, { stdio: ['ignore', 'pipe', 'pipe'], shell: process.platform === 'win32' });
+    // cross-spawn resolves the claude.cmd/.ps1 shim on Windows without a shell.
+    const child = spawn('claude', task.argv, { stdio: ['ignore', 'pipe', 'pipe'] });
     const tail = (buf) => buf.toString().split('\n').filter(Boolean).forEach((l) => onLog?.(l));
     child.stdout.on('data', tail);
     child.stderr.on('data', tail);

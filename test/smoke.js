@@ -37,7 +37,16 @@ try {
     const body = await readFile(w.path, 'utf8');
     assert.ok(body.length > 0, 'non-empty file');
   }
-  console.log(`ok — ${cmds.length} cmds, ${writes.length} files written & verified`);
+  // every real catalog arg passes the allowlist; an injected one is rejected
+  for (const t of cmds) {
+    const { ok } = await runTask(t, { dryRun: true, onLog() {} });
+    assert.ok(ok, `catalog arg passes allowlist: ${t.label}`);
+  }
+  const evil = { kind: 'cmd', label: 'evil', argv: ['mcp', 'add', 'x; rm -rf ~'] };
+  const r = await runTask(evil, { dryRun: false, onLog() {} });
+  assert.equal(r.ok, false, 'shell-metachar arg is rejected');
+
+  console.log(`ok — ${cmds.length} cmds, ${writes.length} files, ${copies.length} copies; injection rejected`);
 } finally {
   await rm(dir, { recursive: true, force: true });
 }
