@@ -167,6 +167,8 @@ export const mcpServers = [
     id: 'obsidian-mcp-server',
     note: 'Obsidian vault via Local REST API (stdio)',
     argv: ['mcp', 'add', 'obsidian-mcp-server', '--', 'npx', '-y', 'obsidian-mcp-server'],
+    // Wizard injects the vault's existing REST API key at runtime (never committed).
+    obsidianKey: true,
     selected: true,
     info: {
       why: 'Notes and decisions live outside the repo.',
@@ -234,6 +236,49 @@ export const userSkills = [
       what: 'Skill bundle: search, daily notes, memory, vault patching.',
       goal: 'Resume context and persist memory in your vault.',
       impact: 'Continuity across sessions; less re-explaining.',
+    },
+  },
+  {
+    id: 'obsidian commands',
+    note: '/obsidian:resume /search /summarize slash commands',
+    src: join(root, 'assets/user-files/commands/obsidian'),
+    dest: '.claude/commands/obsidian',
+    dir: true,
+    selected: true,
+    info: {
+      why: 'Vault workflows deserve one-keystroke entry points.',
+      who: 'Obsidian users who run resume/search/summarize often.',
+      what: 'Slash commands wrapping the Local REST API.',
+      goal: 'Trigger vault recall and summaries without retyping.',
+      impact: 'Faster context recovery at session start.',
+    },
+  },
+  {
+    id: 'schedule-day',
+    note: 'generate the QRSafe 100-Days issue from the vault',
+    src: join(root, 'assets/user-files/commands/schedule-day.md'),
+    dest: '.claude/commands/schedule-day.md',
+    selected: true,
+    info: {
+      why: 'Daily issue prep is repetitive and easy to skip.',
+      who: 'Maintainers of the QRSafe 100-Days series.',
+      what: 'Command that builds today’s issue from the schedule note.',
+      goal: 'Produce the day’s recap + hints without solution code.',
+      impact: 'Consistent daily output; less manual assembly.',
+    },
+  },
+  {
+    id: 'error-log-cleaner',
+    note: 'dedupe and organize mixed error logs',
+    src: join(root, 'assets/user-files/agents/error-log-cleaner.md'),
+    dest: '.claude/agents/error-log-cleaner.md',
+    selected: true,
+    info: {
+      why: 'Raw console dumps bury the few unique failures.',
+      who: 'Devs debugging noisy cross-platform error output.',
+      what: 'Subagent that cleans, dedupes, and groups errors.',
+      goal: 'Turn a wall of logs into the distinct issues.',
+      impact: 'Faster triage; fewer duplicate rabbit holes.',
     },
   },
 ];

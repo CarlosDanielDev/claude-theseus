@@ -2,8 +2,58 @@
 // Tasks are either a `claude` subprocess or a local file-scaffold action.
 import spawn from 'cross-spawn';
 import { writeFile, mkdir, readFile, cp } from 'node:fs/promises';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
+
+// Find the Obsidian Local REST API key WITHOUT generating one (the plugin mints
+// it in-app; there's no CLI for that). We only detect and reuse an existing key.
+// Runtime-only — the key is never written to the repo. Result is cached.
+let _obs;
+export function resolveObsidian() {
+  if (_obs) return _obs;
+  const rel = ['.obsidian', 'plugins', 'obsidian-local-rest-api', 'data.json'];
+  if (process.env.OBSIDIAN_API_KEY) {
+    return (_obs = {
+      found: true, source: 'env',
+      key: process.env.OBSIDIAN_API_KEY,
+      baseUrl: process.env.OBSIDIAN_BASE_URL || 'https://127.0.0.1:27124',
+    });
+  }
+  const home = homedir();
+  const roots = [process.env.OBSIDIAN_VAULT, join(home, 'Documents'), home].filter(Boolean);
+  const candidates = [];
+  for (const r of roots) {
+    candidates.push(join(r, ...rel)); // r itself a vault
+    try {
+      for (const d of readdirSync(r, { withFileTypes: true }))
+        if (d.isDirectory()) candidates.push(join(r, d.name, ...rel)); // one level down
+    } catch { /* unreadable root, skip */ }
+  }
+  for (const c of candidates) {
+    if (!existsSync(c)) continue;
+    try {
+      const data = JSON.parse(readFileSync(c, 'utf8'));
+      if (data.apiKey) {
+        return (_obs = { found: true, source: c, key: data.apiKey, baseUrl: `https://127.0.0.1:${data.port || 27124}` });
+      }
+    } catch { /* malformed, keep looking */ }
+  }
+  return (_obs = { found: false });
+}
+
+function obsidianArgv(o) {
+  return [
+    'mcp', 'add', 'obsidian-mcp-server',
+    '-e', `OBSIDIAN_API_KEY=${o.key}`,
+    '-e', `OBSIDIAN_BASE_URL=${o.baseUrl}`,
+    '-e', 'OBSIDIAN_VERIFY_SSL=false',
+    '-e', 'OBSIDIAN_ENABLE_CACHE=true',
+    '--', 'npx', '-y', 'obsidian-mcp-server',
+  ];
+}
+
+const maskKey = (a) => a.replace(/(API_KEY=)\S+/i, '$1****');
 
 // selections: { marketplaces:[id], plugins:[id], mcp:[serverObj], scaffold:[fileObj], targetDir }
 // Returns ordered [{ kind:'cmd'|'scaffold', label, argv?, path?, content? }]
@@ -16,7 +66,14 @@ export function buildPlan(sel) {
     tasks.push({ kind: 'cmd', label: `plugin install ${id}`, argv: ['plugin', 'install', id] });
   }
   for (const s of sel.mcp) {
-    tasks.push({ kind: 'cmd', label: `mcp add ${s.id}`, argv: s.argv });
+    let { argv } = s;
+    let suffix = '';
+    if (s.obsidianKey) {
+      const o = resolveObsidian();
+      if (o.found) { argv = obsidianArgv(o); suffix = ' (key detected)'; }
+      else suffix = ' (no key — set OBSIDIAN_API_KEY or enable the Local REST API plugin)';
+    }
+    tasks.push({ kind: 'cmd', label: `mcp add ${s.id}${suffix}`, argv });
   }
   for (const u of sel.userSkills || []) {
     const dest = join(homedir(), u.dest);
@@ -32,7 +89,7 @@ export function buildPlan(sel) {
 // Run one task. onLog(line) streams output. Resolves {ok, code}.
 export function runTask(task, { dryRun, onLog }) {
   if (dryRun) {
-    const preview = task.kind === 'cmd' ? `claude ${task.argv.join(' ')}`
+    const preview = task.kind === 'cmd' ? `claude ${task.argv.map(maskKey).join(' ')}`
       : task.kind === 'copy' ? `copy ${task.dir ? 'dir ' : ''}${task.src} -> ${task.path}`
       : `write -> ${task.path}`;
     onLog?.(`[dry-run] ${preview}`);

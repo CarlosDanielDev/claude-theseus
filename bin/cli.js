@@ -39,7 +39,8 @@ if (has('--print-plan') || has('--yes')) {
   if (has('--print-plan')) {
     process.stdout.write(`Default plan — ${plan.length} actions (target: ${targetDir})\n\n`);
     for (const t of plan) {
-      const detail = t.kind === 'cmd' ? `claude ${t.argv.join(' ')}` : `write ${t.path}`;
+      const argv = t.argv ? t.argv.map((a) => a.replace(/(API_KEY=)\S+/i, '$1****')) : [];
+      const detail = t.kind === 'cmd' ? `claude ${argv.join(' ')}` : `write ${t.path}`;
       process.stdout.write(`  ${t.kind === 'cmd' ? '⚡' : '✎'} ${detail}\n`);
     }
     process.exit(0);

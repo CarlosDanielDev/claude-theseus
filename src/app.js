@@ -39,7 +39,7 @@ const STEPS = [
   { key: 'marketplaces', title: 'Marketplaces', verb: 'register' },
   { key: 'plugins', title: 'Plugins', verb: 'install' },
   { key: 'mcp', title: 'MCP Servers', verb: 'add' },
-  { key: 'userSkills', title: 'User skills (~/.claude/skills)', verb: 'copy' },
+  { key: 'userSkills', title: 'User files (~/.claude: skills, commands, agents)', verb: 'copy' },
   { key: 'scaffold', title: 'Project .claude/ scaffold', verb: 'write' },
 ];
 

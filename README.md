@@ -21,9 +21,15 @@ Walks five steps, each a checkbox list preselected to the full setup:
 1. **Marketplaces** — `claude plugin marketplace add` for 5 registries
 2. **Plugins** — `claude plugin install` for the core 14 (superpowers, caveman,
    ponytail, figma, code-review, security-guidance, LSP backends, …)
-3. **MCP servers** — `claude mcp add` for obsidian / context7 / figma
-4. **User skills** — copies loose `~/.claude/skills/` skills (e.g. `council`)
-   vendored under `assets/`, not available from any marketplace
+3. **MCP servers** — `claude mcp add` for obsidian / context7 / figma. For
+   obsidian the wizard **auto-detects the existing Local REST API key** from
+   your vault's `data.json` and injects it (masked in all previews, never
+   committed). It does not *generate* a key — Obsidian's plugin mints that
+   in-app; if none exists, enable the Local REST API plugin first or set
+   `OBSIDIAN_API_KEY`.
+4. **User files** — copies loose `~/.claude/` skills, commands, and agents
+   vendored under `assets/` (council, obsidian-brain, the `/obsidian:*`
+   commands, schedule-day, error-log-cleaner) — none available from a marketplace
 5. **Project scaffold** — writes a Maestro-style `.claude/` (skills, commands,
    agents) into the target project
 
