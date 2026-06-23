@@ -50,7 +50,8 @@ export function runTask(task, { dryRun, onLog }) {
       });
   }
   return new Promise((res) => {
-    const child = spawn('claude', task.argv, { stdio: ['ignore', 'pipe', 'pipe'] });
+    // shell:true so Windows resolves claude.cmd/.ps1 shim (ENOENT otherwise).
+    const child = spawn('claude', task.argv, { stdio: ['ignore', 'pipe', 'pipe'], shell: process.platform === 'win32' });
     const tail = (buf) => buf.toString().split('\n').filter(Boolean).forEach((l) => onLog?.(l));
     child.stdout.on('data', tail);
     child.stderr.on('data', tail);
