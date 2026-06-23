@@ -46,6 +46,15 @@ try {
   const r = await runTask(evil, { dryRun: false, onLog() {} });
   assert.equal(r.ok, false, 'shell-metachar arg is rejected');
 
+  // dir-type user skill copies its whole tree
+  const dirSkill = userSkills.find((x) => x.dir && x.selected);
+  if (dirSkill) {
+    const out = join(dir, 'skills', dirSkill.id);
+    const { ok } = await runTask({ kind: 'copy', dir: true, src: dirSkill.src, path: out }, { dryRun: false, onLog() {} });
+    assert.ok(ok, 'dir skill copied');
+    assert.ok((await readFile(join(out, 'SKILL.md'), 'utf8')).length > 0, 'nested SKILL.md present');
+  }
+
   console.log(`ok — ${cmds.length} cmds, ${writes.length} files, ${copies.length} copies; injection rejected`);
 } finally {
   await rm(dir, { recursive: true, force: true });

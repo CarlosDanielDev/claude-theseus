@@ -221,6 +221,21 @@ export const userSkills = [
       impact: 'Surfaces risks a single agreeable answer would hide.',
     },
   },
+  {
+    id: 'obsidian-brain',
+    note: 'read/write Obsidian vault via Local REST API',
+    src: join(root, 'assets/user-skills/obsidian-brain'),
+    dest: '.claude/skills/obsidian-brain',
+    dir: true,
+    selected: true,
+    info: {
+      why: 'Vault knowledge and decisions are stranded outside chat.',
+      who: 'Obsidian users who want Claude to read and extend notes.',
+      what: 'Skill bundle: search, daily notes, memory, vault patching.',
+      goal: 'Resume context and persist memory in your vault.',
+      impact: 'Continuity across sessions; less re-explaining.',
+    },
+  },
 ];
 
 // Project-local .claude/ scaffold. Each entry is one file written into the

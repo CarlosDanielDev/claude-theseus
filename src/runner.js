@@ -1,7 +1,7 @@
 // Builds the task list from selections and executes it (or prints it on dry-run).
 // Tasks are either a `claude` subprocess or a local file-scaffold action.
 import spawn from 'cross-spawn';
-import { writeFile, mkdir, readFile } from 'node:fs/promises';
+import { writeFile, mkdir, readFile, cp } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 
@@ -20,7 +20,7 @@ export function buildPlan(sel) {
   }
   for (const u of sel.userSkills || []) {
     const dest = join(homedir(), u.dest);
-    tasks.push({ kind: 'copy', label: `user skill ${u.id} -> ~/${u.dest}`, src: u.src, path: dest });
+    tasks.push({ kind: 'copy', label: `user skill ${u.id} -> ~/${u.dest}`, src: u.src, path: dest, dir: !!u.dir });
   }
   const dir = sel.targetDir || '.';
   for (const f of sel.scaffold) {
@@ -33,10 +33,16 @@ export function buildPlan(sel) {
 export function runTask(task, { dryRun, onLog }) {
   if (dryRun) {
     const preview = task.kind === 'cmd' ? `claude ${task.argv.join(' ')}`
-      : task.kind === 'copy' ? `copy ${task.src} -> ${task.path}`
+      : task.kind === 'copy' ? `copy ${task.dir ? 'dir ' : ''}${task.src} -> ${task.path}`
       : `write -> ${task.path}`;
     onLog?.(`[dry-run] ${preview}`);
     return Promise.resolve({ ok: true, code: 0 });
+  }
+  if (task.kind === 'copy' && task.dir) {
+    const full = resolve(task.path);
+    return cp(task.src, full, { recursive: true })
+      .then(() => ({ ok: true, code: 0 }))
+      .catch((err) => { onLog?.(String(err.message || err)); return { ok: false, code: 1 }; });
   }
   if (task.kind === 'scaffold' || task.kind === 'copy') {
     const full = resolve(task.path);
