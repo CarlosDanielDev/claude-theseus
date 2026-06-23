@@ -16,16 +16,20 @@ npm install && npm start
 
 ## What it does
 
-Walks four steps, each a checkbox list preselected to the full setup:
+Walks five steps, each a checkbox list preselected to the full setup:
 
 1. **Marketplaces** — `claude plugin marketplace add` for 5 registries
 2. **Plugins** — `claude plugin install` for the core 14 (superpowers, caveman,
    ponytail, figma, code-review, security-guidance, LSP backends, …)
 3. **MCP servers** — `claude mcp add` for obsidian / context7 / figma
-4. **Project scaffold** — writes a Maestro-style `.claude/` (skills, commands,
+4. **User skills** — copies loose `~/.claude/skills/` skills (e.g. `council`)
+   vendored under `assets/`, not available from any marketplace
+5. **Project scaffold** — writes a Maestro-style `.claude/` (skills, commands,
    agents) into the target project
 
-Then a review screen lists every action before anything runs.
+Highlight any plugin / server / skill and a panel shows **why · for who · what ·
+goal · measurable impact**. Then a review screen lists every action before
+anything runs.
 
 ## Controls
 

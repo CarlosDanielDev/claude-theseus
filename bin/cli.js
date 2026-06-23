@@ -26,12 +26,13 @@ const dryRun = has('--dry-run');
 
 // Headless paths: no TUI, scriptable, also the smoke-test surface.
 if (has('--print-plan') || has('--yes')) {
-  const { marketplaces, plugins, mcpServers, scaffold } = await import('../src/catalog.js');
+  const { marketplaces, plugins, mcpServers, userSkills, scaffold } = await import('../src/catalog.js');
   const { buildPlan, runHeadless } = await import('../src/runner.js');
   const plan = buildPlan({
     marketplaces: marketplaces.filter((x) => x.selected).map((x) => x.id),
     plugins: plugins.filter((x) => x.selected).map((x) => x.id),
     mcp: mcpServers.filter((x) => x.selected),
+    userSkills: userSkills.filter((x) => x.selected),
     scaffold: scaffold.filter((x) => x.selected),
     targetDir,
   });

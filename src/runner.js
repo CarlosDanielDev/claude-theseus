@@ -1,7 +1,8 @@
 // Builds the task list from selections and executes it (or prints it on dry-run).
 // Tasks are either a `claude` subprocess or a local file-scaffold action.
 import { spawn } from 'node:child_process';
-import { writeFile, mkdir } from 'node:fs/promises';
+import { writeFile, mkdir, readFile } from 'node:fs/promises';
+import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 
 // selections: { marketplaces:[id], plugins:[id], mcp:[serverObj], scaffold:[fileObj], targetDir }
@@ -17,6 +18,10 @@ export function buildPlan(sel) {
   for (const s of sel.mcp) {
     tasks.push({ kind: 'cmd', label: `mcp add ${s.id}`, argv: s.argv });
   }
+  for (const u of sel.userSkills || []) {
+    const dest = join(homedir(), u.dest);
+    tasks.push({ kind: 'copy', label: `user skill ${u.id} -> ~/${u.dest}`, src: u.src, path: dest });
+  }
   const dir = sel.targetDir || '.';
   for (const f of sel.scaffold) {
     tasks.push({ kind: 'scaffold', label: `write ${join(dir, f.path)}`, path: join(dir, f.path), content: f.content });
@@ -27,14 +32,17 @@ export function buildPlan(sel) {
 // Run one task. onLog(line) streams output. Resolves {ok, code}.
 export function runTask(task, { dryRun, onLog }) {
   if (dryRun) {
-    const preview = task.kind === 'cmd' ? `claude ${task.argv.join(' ')}` : `write -> ${task.path}`;
+    const preview = task.kind === 'cmd' ? `claude ${task.argv.join(' ')}`
+      : task.kind === 'copy' ? `copy ${task.src} -> ${task.path}`
+      : `write -> ${task.path}`;
     onLog?.(`[dry-run] ${preview}`);
     return Promise.resolve({ ok: true, code: 0 });
   }
-  if (task.kind === 'scaffold') {
+  if (task.kind === 'scaffold' || task.kind === 'copy') {
     const full = resolve(task.path);
-    return mkdir(dirname(full), { recursive: true })
-      .then(() => writeFile(full, task.content))
+    const body = task.kind === 'copy' ? readFile(task.src) : Promise.resolve(task.content);
+    return body
+      .then((content) => mkdir(dirname(full), { recursive: true }).then(() => writeFile(full, content)))
       .then(() => ({ ok: true, code: 0 }))
       .catch((err) => {
         onLog?.(String(err.message || err));

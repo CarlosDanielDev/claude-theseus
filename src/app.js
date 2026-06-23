@@ -3,12 +3,35 @@ import { Box, Text, useApp, useInput } from 'ink';
 import Spinner from 'ink-spinner';
 import Gradient from 'ink-gradient';
 import htm from 'htm';
-import { marketplaces, plugins, mcpServers, scaffold } from './catalog.js';
+import { marketplaces, plugins, mcpServers, userSkills, scaffold } from './catalog.js';
 import { buildPlan, runTask } from './runner.js';
 
 const html = htm.bind(React.createElement);
 
 const clone = (arr) => arr.map((x) => ({ ...x }));
+
+const INFO_ROWS = [
+  ['Why', 'why'],
+  ['For who', 'who'],
+  ['What', 'what'],
+  ['Goal', 'goal'],
+  ['Impact', 'impact'],
+];
+
+function infoPanel(item) {
+  if (!item || !item.info) return null;
+  return html`
+    <${Box} flexDirection="column" marginTop=${1} paddingX=${1} borderStyle="round" borderColor="gray">
+      <${Text} bold color="cyan">${item.id || item.label}<//>
+      ${INFO_ROWS.map(([heading, key], i) => html`
+        <${Box} key=${i}>
+          <${Box} width=${9}><${Text} color="yellow">${heading}<//><//>
+          <${Text}>${item.info[key]}<//>
+        <//>
+      `)}
+    <//>
+  `;
+}
 const labelOf = (key, it) =>
   key === 'marketplaces' ? it.label : key === 'scaffold' ? it.path : it.id;
 
@@ -16,6 +39,7 @@ const STEPS = [
   { key: 'marketplaces', title: 'Marketplaces', verb: 'register' },
   { key: 'plugins', title: 'Plugins', verb: 'install' },
   { key: 'mcp', title: 'MCP Servers', verb: 'add' },
+  { key: 'userSkills', title: 'User skills (~/.claude/skills)', verb: 'copy' },
   { key: 'scaffold', title: 'Project .claude/ scaffold', verb: 'write' },
 ];
 
@@ -25,6 +49,7 @@ export default function App({ targetDir, dryRunDefault }) {
     marketplaces: clone(marketplaces),
     plugins: clone(plugins),
     mcp: clone(mcpServers),
+    userSkills: clone(userSkills),
     scaffold: clone(scaffold),
   });
   const [stepIdx, setStepIdx] = useState(0);
@@ -40,6 +65,7 @@ export default function App({ targetDir, dryRunDefault }) {
     marketplaces: lists.marketplaces.filter((x) => x.selected).map((x) => x.id),
     plugins: lists.plugins.filter((x) => x.selected).map((x) => x.id),
     mcp: lists.mcp.filter((x) => x.selected),
+    userSkills: lists.userSkills.filter((x) => x.selected),
     scaffold: lists.scaffold.filter((x) => x.selected),
     targetDir,
   });
@@ -126,6 +152,7 @@ export default function App({ targetDir, dryRunDefault }) {
             <//>
           `)}
         <//>
+        ${infoPanel(list[cursor])}
         <${Box} marginTop=${1}>
           <${Text} dimColor>↑↓ move · space toggle · a all · n none · → next · ← back · d dry-run · q quit<//>
         <//>
@@ -141,7 +168,7 @@ export default function App({ targetDir, dryRunDefault }) {
         <${Box} flexDirection="column" marginTop=${1}>
           ${plan.map((t, i) => html`
             <${Box} key=${i}>
-              <${Text} color=${t.kind === 'scaffold' ? 'magenta' : 'blue'}>${t.kind === 'scaffold' ? '✎' : '⚡'} <//>
+              <${Text} color=${t.kind === 'cmd' ? 'blue' : 'magenta'}>${t.kind === 'cmd' ? '⚡' : '✎'} <//>
               <${Text}>${t.label}<//>
             <//>
           `)}

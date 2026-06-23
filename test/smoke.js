@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { marketplaces, plugins, mcpServers, scaffold } from '../src/catalog.js';
+import { marketplaces, plugins, mcpServers, userSkills, scaffold } from '../src/catalog.js';
 import { buildPlan, runTask } from '../src/runner.js';
 
 const dir = await mkdtemp(join(tmpdir(), 'theseus-'));
@@ -13,11 +13,16 @@ try {
     marketplaces: marketplaces.filter((x) => x.selected).map((x) => x.id),
     plugins: plugins.filter((x) => x.selected).map((x) => x.id),
     mcp: mcpServers.filter((x) => x.selected),
+    userSkills: userSkills.filter((x) => x.selected),
     scaffold: scaffold.filter((x) => x.selected),
     targetDir: dir,
   });
   const cmds = plan.filter((t) => t.kind === 'cmd');
   const writes = plan.filter((t) => t.kind === 'scaffold');
+  const copies = plan.filter((t) => t.kind === 'copy');
+  assert.equal(copies.length, userSkills.filter((x) => x.selected).length, 'one copy per user skill');
+  // copies must NOT land under the --target dir (they go to ~)
+  assert.ok(copies.every((t) => !t.path.startsWith(dir)), 'user skills bypass --target');
   assert.ok(cmds.every((t) => t.argv[0] === 'plugin' || t.argv[0] === 'mcp'), 'cmds target claude');
   assert.equal(writes.length, scaffold.filter((x) => x.selected).length, 'one write per scaffold file');
 
