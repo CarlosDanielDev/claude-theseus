@@ -6,7 +6,7 @@
     ╩ ╩ ╩╚═╝╚═╝╚═╝╚═╝╚═╝
 ```
 
-### 🚢 rebuild your entire Claude Code setup in one guided pass
+###  rebuild your entire Claude Code setup in one guided pass
 
 A wizard **TUI** that registers marketplaces, installs plugins, wires MCP
 servers, copies your loose skills/commands/agents, and scaffolds a project
@@ -21,17 +21,19 @@ servers, copies your loose skills/commands/agents, and scaffolds a project
 [![no build](https://img.shields.io/badge/build-none-10b981?style=for-the-badge)](#)
 [![runs from github](https://img.shields.io/badge/npx-github-8b5cf6?style=for-the-badge)](#-run)
 
+<sub>icons below are Nerd Font glyphs — install a Nerd Font to see them render</sub>
+
 </div>
 
 ---
 
-## ⚡ Run
+##  Run
 
 No install, no registry — straight from GitHub:
 
 ```bash
 npx github:CarlosDanielDev/claude-theseus          # latest
-npx github:CarlosDanielDev/claude-theseus#v0.2.1   # pinned
+npx github:CarlosDanielDev/claude-theseus#v0.2.2   # pinned
 ```
 
 From a clone:
@@ -44,17 +46,17 @@ npm install && npm start
 
 ---
 
-## 🧭 What it does
+##  What it does
 
 Five steps, each a checkbox list preselected to a known-good setup:
 
 | # | Step | Runs |
 |---|------|------|
-| 1 | 🏬 **Marketplaces** | `claude plugin marketplace add` × 5 registries |
-| 2 | 🧩 **Plugins** | `claude plugin install` × 14 (superpowers, caveman, ponytail, figma, code-review, security-guidance, LSP backends, …) |
-| 3 | 🔌 **MCP servers** | `claude mcp add` for obsidian / context7 / figma |
-| 4 | 📂 **User files** | copies loose `~/.claude/` skills, commands & agents vendored under `assets/` |
-| 5 | 🏗️ **Project scaffold** | writes a starter `.claude/` (skills/commands/agents) into the target |
+| 1 |  **Marketplaces** | `claude plugin marketplace add` × 5 registries |
+| 2 |  **Plugins** | `claude plugin install` × 14 (superpowers, caveman, ponytail, figma, code-review, security-guidance, LSP backends, …) |
+| 3 |  **MCP servers** | `claude mcp add` for obsidian / context7 / figma |
+| 4 |  **User files** | copies loose `~/.claude/` skills, commands & agents vendored under `assets/` |
+| 5 |  **Project scaffold** | writes a starter `.claude/` (skills/commands/agents) into the target |
 
 Highlight **any** item and a panel explains it:
 
@@ -73,7 +75,7 @@ A review screen lists every action before anything runs.
 
 ---
 
-## ♻️ Idempotent — patches only what's missing
+##  Idempotent — patches only what's missing
 
 On launch it probes your machine — `plugin marketplace list`, `plugin list`,
 `mcp list`, and file existence — and **deselects anything already configured**.
@@ -89,7 +91,7 @@ fill the gaps — or `--all` to re-apply everything.
 
 ---
 
-## 🔐 Obsidian, handled
+##  Obsidian, handled
 
 For the Obsidian MCP server the wizard **auto-detects the existing Local REST
 API key** from your vault's `data.json` and injects it — **masked in every
@@ -100,7 +102,7 @@ clear hint to enable the plugin or set `OBSIDIAN_API_KEY`.
 
 ---
 
-## 🎬 Demo / recording
+##  Demo / recording
 
 A configured box has a near-empty plan. Point detection at an empty folder to
 show the full flow:
@@ -113,11 +115,11 @@ npx github:CarlosDanielDev/claude-theseus \
 
 `--load-from` treats the folder as a fake `$HOME` (via `CLAUDE_CONFIG_DIR`) for
 **detection only** — everything reads as not-configured, so all 32 actions show.
-`--dry-run` keeps the recording harmless. 🐍 *Psst — the Konami code works in the wizard.*
+`--dry-run` keeps the recording harmless. *Psst — the Konami code works in the wizard.*
 
 ---
 
-## ⌨️ Controls
+##  Controls
 
 | Keys | Action | | Keys | Action |
 |------|--------|-|------|--------|
@@ -128,7 +130,7 @@ npx github:CarlosDanielDev/claude-theseus \
 
 ---
 
-## 🚩 Flags
+##  Flags
 
 ```
 --dry-run         preview only, execute nothing
@@ -145,7 +147,7 @@ previews the whole run without touching anything.
 
 ---
 
-## 🛠️ Make it yours
+##  Make it yours
 
 Everything lives in **`src/catalog.js`** — add a marketplace, flip a plugin's
 default `selected`, change an MCP URL, drop in a scaffold file. No other code to
@@ -153,7 +155,7 @@ touch. Loose skills are vendored under `assets/`.
 
 ---
 
-## ✅ Test
+##  Test
 
 ```bash
 npm test    # plan shape + real scaffold writes + injection guard, then the snake suite
