@@ -27,7 +27,7 @@ function infoPanel(item) {
   if (!item || !item.info) return null;
   return html`
     <${Box} flexDirection="column" marginTop=${1} paddingX=${1} borderStyle="round" borderColor="gray">
-      <${Text} bold color="cyan">${item.id || item.label}<//>
+      <${Text} bold color="cyan">${item.id || item.label || item.path}<//>
       ${INFO_ROWS.map(([heading, key], i) => html`
         <${Box} key=${i}>
           <${Box} width=${9}><${Text} color="yellow">${heading}<//><//>

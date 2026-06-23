@@ -8,11 +8,56 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 // the full setup but lets you trim.
 
 export const marketplaces = [
-  { id: 'anthropics/claude-plugins-official', label: 'claude-plugins-official', note: '200+ official plugins', selected: true },
-  { id: 'anthropics/claude-code', label: 'claude-code', note: 'core', selected: true },
-  { id: 'JuliusBrussee/caveman', label: 'caveman', note: 'compressed comms', selected: true },
-  { id: 'nextlevelbuilder/ui-ux-pro-max-skill', label: 'ui-ux-pro-max-skill', note: 'design', selected: true },
-  { id: 'DietrichGebert/ponytail', label: 'ponytail', note: 'lazy mode', selected: true },
+  {
+    id: 'anthropics/claude-plugins-official', label: 'claude-plugins-official', note: '200+ official plugins', selected: true,
+    info: {
+      why: 'Most capability ships as plugins, not in core.',
+      who: 'Every Claude Code user.',
+      what: 'Anthropic’s official registry, 200+ plugins.',
+      goal: 'One trusted source for first-party plugins.',
+      impact: 'Broad, vetted capability without hunting repos.',
+    },
+  },
+  {
+    id: 'anthropics/claude-code', label: 'claude-code', note: 'core', selected: true,
+    info: {
+      why: 'Core tooling and reference plugins live here.',
+      who: 'Every Claude Code user.',
+      what: 'The claude-code repo exposed as a marketplace.',
+      goal: 'Pull core / reference extensions.',
+      impact: 'Baseline tooling available.',
+    },
+  },
+  {
+    id: 'JuliusBrussee/caveman', label: 'caveman', note: 'compressed comms', selected: true,
+    info: {
+      why: 'Token-compressed comms aren’t in the official set.',
+      who: 'Users who want terse, cheaper output.',
+      what: 'Marketplace hosting the caveman plugin.',
+      goal: 'Enable compressed response modes.',
+      impact: 'Access to ~75% token-cut modes.',
+    },
+  },
+  {
+    id: 'nextlevelbuilder/ui-ux-pro-max-skill', label: 'ui-ux-pro-max-skill', note: 'design', selected: true,
+    info: {
+      why: 'Deep design intel is a third-party skill.',
+      who: 'Frontend / product builders.',
+      what: 'Marketplace for the ui-ux-pro-max skill.',
+      goal: 'Source the design-system skill.',
+      impact: 'Distinctive, accessible UI guidance on tap.',
+    },
+  },
+  {
+    id: 'DietrichGebert/ponytail', label: 'ponytail', note: 'lazy mode', selected: true,
+    info: {
+      why: 'Anti-over-engineering discipline is third-party.',
+      who: 'Devs fighting bloat and boilerplate.',
+      what: 'Marketplace for the ponytail plugin.',
+      goal: 'Source the minimalism / YAGNI mode.',
+      impact: 'Leaner solutions by default.',
+    },
+  },
 ];
 
 // plugin id is `name@marketplace` — install verbatim.
@@ -275,6 +320,13 @@ export const scaffold = [
   {
     path: '.claude/skills/project-patterns/SKILL.md',
     selected: true,
+    info: {
+      why: 'New code drifts from a project’s conventions.',
+      who: 'Anyone (including Claude) working in this repo.',
+      what: 'A skill recording this project’s patterns.',
+      goal: 'Make changes follow the house rules.',
+      impact: 'Consistent code; less review churn.',
+    },
     content: `---
 name: project-patterns
 description: Use when working in this project — record its conventions here so Claude follows them.
@@ -293,6 +345,13 @@ Replace the examples below with this project's real conventions.
   {
     path: '.claude/skills/api-contract-validation/SKILL.md',
     selected: true,
+    info: {
+      why: 'Client/model field mismatches fail silently.',
+      who: 'Anyone calling a model or provider API.',
+      what: 'A skill that checks request/response shapes.',
+      goal: 'Catch contract drift before shipping.',
+      impact: 'Fewer silent integration failures.',
+    },
     content: `---
 name: api-contract-validation
 description: Use before sending requests to a model/provider — prevents client/model field mismatches.
@@ -307,6 +366,13 @@ Mismatched field names and enum values are the top source of silent failures.
   {
     path: '.claude/skills/security-patterns/SKILL.md',
     selected: true,
+    info: {
+      why: 'Security gets skipped under delivery pressure.',
+      who: 'Anyone handling input, auth, or secrets.',
+      what: 'An OWASP Top 10 quick-reference skill.',
+      goal: 'Default to secure code paths.',
+      impact: 'Lower injection / authz / leak risk.',
+    },
     content: `---
 name: security-patterns
 description: Use when handling input, auth, or secrets — OWASP Top 10 quick guidance.
@@ -322,6 +388,13 @@ description: Use when handling input, auth, or secrets — OWASP Top 10 quick gu
   {
     path: '.claude/commands/auto.md',
     selected: true,
+    info: {
+      why: 'Running implement→simplify→pushup by hand is error-prone.',
+      who: 'Solo devs driving an issue end-to-end.',
+      what: 'One command that loops the full cycle.',
+      goal: 'Finish an issue autonomously.',
+      impact: 'Fewer missed steps; faster turnaround.',
+    },
     content: `---
 description: Autonomous loop for one issue — implement, simplify, pushup.
 ---
@@ -333,6 +406,13 @@ One \`/auto\` per issue (branch lock). Stop on red tests or manual-QA gate.
   {
     path: '.claude/commands/implement.md',
     selected: true,
+    info: {
+      why: 'Ad-hoc implementation skips TDD and review.',
+      who: 'Devs working a single issue.',
+      what: 'A command running the full subagent sequence.',
+      goal: 'Implement TDD-first with checks.',
+      impact: 'Tested, reviewed changes by default.',
+    },
     content: `---
 description: Implement a single issue with the full subagent sequence.
 ---
@@ -344,6 +424,13 @@ Subagents are consultive; the orchestrator writes all non-doc code.
   {
     path: '.claude/commands/plan-feature.md',
     selected: true,
+    info: {
+      why: 'Big features need contracts before code.',
+      who: 'Leads decomposing multi-issue work.',
+      what: 'A command that plans issues, API-first.',
+      goal: 'Sequence work with contracts up front.',
+      impact: 'Fewer integration surprises.',
+    },
     content: `---
 description: Plan a multi-issue feature, API contracts first.
 ---
@@ -354,6 +441,13 @@ Decompose the feature into issues. Define API contracts before implementation.
   {
     path: '.claude/agents/gatekeeper.md',
     selected: true,
+    info: {
+      why: 'Unready issues waste implementation time.',
+      who: 'Teams enforcing Definition of Ready.',
+      what: 'An agent that blocks under-specified issues.',
+      goal: 'Stop work on unclear issues.',
+      impact: 'Less rework from bad inputs.',
+    },
     content: `---
 name: gatekeeper
 description: Blocks unready issues (Definition of Ready enforcement).
@@ -366,6 +460,13 @@ test plan. Consultive only — report, do not edit code.
   {
     path: '.claude/agents/architect.md',
     selected: true,
+    info: {
+      why: 'Jumping to code skips design trade-offs.',
+      who: 'Devs facing non-trivial changes.',
+      what: 'An agent that produces a step plan + key files.',
+      goal: 'Decide the approach before building.',
+      impact: 'Fewer mid-build rewrites.',
+    },
     content: `---
 name: architect
 description: Designs implementation strategy and flags architectural trade-offs.
@@ -378,6 +479,13 @@ Consultive only.
   {
     path: '.claude/agents/qa.md',
     selected: true,
+    info: {
+      why: 'UI changes ship without a manual pass.',
+      who: 'Teams gating UI on manual QA.',
+      what: 'An agent producing a manual test matrix.',
+      goal: 'Block merge until UI is verified.',
+      impact: 'Fewer visual / UX regressions.',
+    },
     content: `---
 name: qa
 description: Manual QA gate for UI changes — blocks PR until the matrix is run.
