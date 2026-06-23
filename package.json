@@ -16,7 +16,7 @@
   "scripts": {
     "start": "node bin/cli.js",
     "plan": "node bin/cli.js --print-plan",
-    "test": "node test/smoke.js"
+    "test": "node test/smoke.js && node test/snake.test.js"
   },
   "dependencies": {
     "cross-spawn": "^7.0.6",
