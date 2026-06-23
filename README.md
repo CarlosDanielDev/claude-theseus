@@ -8,11 +8,20 @@ Named for the ship of Theseus: replace every plank and it's still your setup.
 
 ## Run
 
+No install or registry needed — run straight from GitHub:
+
 ```bash
-npx claude-theseus            # interactive wizard
-# or, from a clone:
+npx github:CarlosDanielDev/claude-theseus          # latest main
+npx github:CarlosDanielDev/claude-theseus#v0.1.0   # pinned version
+```
+
+From a clone:
+
+```bash
 npm install && npm start
 ```
+
+If/when published to npm, `npx claude-theseus` works too.
 
 ## What it does
 
