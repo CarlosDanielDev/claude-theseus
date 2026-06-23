@@ -254,20 +254,6 @@ export const userSkills = [
     },
   },
   {
-    id: 'schedule-day',
-    note: 'generate the QRSafe 100-Days issue from the vault',
-    src: join(root, 'assets/user-files/commands/schedule-day.md'),
-    dest: '.claude/commands/schedule-day.md',
-    selected: true,
-    info: {
-      why: 'Daily issue prep is repetitive and easy to skip.',
-      who: 'Maintainers of the QRSafe 100-Days series.',
-      what: 'Command that builds today’s issue from the schedule note.',
-      goal: 'Produce the day’s recap + hints without solution code.',
-      impact: 'Consistent daily output; less manual assembly.',
-    },
-  },
-  {
     id: 'error-log-cleaner',
     note: 'dedupe and organize mixed error logs',
     src: join(root, 'assets/user-files/agents/error-log-cleaner.md'),
