@@ -104,18 +104,22 @@ clear hint to enable the plugin or set `OBSIDIAN_API_KEY`.
 
 ##  Demo / recording
 
-A configured box has a near-empty plan. Point detection at an empty folder to
-show the full flow:
+A configured box has a near-empty plan. `--load-from <dir>` runs the whole setup
+**inside an isolated sandbox** — every plugin, marketplace, MCP server, and user
+file installs into `<dir>` instead of your real machine, so a recording shows a
+real from-scratch install with nothing to undo:
 
 ```bash
-mkdir /tmp/empty-home
+mkdir /tmp/theseus-demo
 npx github:CarlosDanielDev/claude-theseus \
-  --load-from /tmp/empty-home --target /tmp/empty-home/proj --dry-run
+  --load-from /tmp/theseus-demo --target /tmp/theseus-demo/proj
 ```
 
-`--load-from` treats the folder as a fake `$HOME` (via `CLAUDE_CONFIG_DIR`) for
-**detection only** — everything reads as not-configured, so all 32 actions show.
-`--dry-run` keeps the recording harmless. *Psst — the Konami code works in the wizard.*
+It points `claude` at `<dir>/.claude` via `CLAUDE_CONFIG_DIR` and writes user
+files there too. Detection sees the empty sandbox, so all 32 actions run for
+real — green checks, no collisions. Delete the folder when done.
+Add `--dry-run` if you'd rather preview than install. *Psst — the Konami code
+works in the wizard.*
 
 ---
 

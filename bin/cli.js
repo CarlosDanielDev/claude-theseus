@@ -13,10 +13,10 @@ Usage: claude-theseus [options]
   (no options)      launch the interactive TUI wizard
   --dry-run         start the wizard in dry-run mode (preview commands)
   --target <dir>    where to scaffold .claude/ files (default: cwd)
-  --load-from <dir> detect existing config against <dir> as a fake $HOME
-                    instead of the real machine (point at an empty folder to
-                    show a full setup — for demos/recordings). Detection only;
-                    writes still go to the real targets.
+  --load-from <dir> run the whole setup INSIDE <dir> as an isolated sandbox:
+                    claude config (plugins/marketplaces/MCP) and user-file
+                    copies all go there, the real machine is untouched. Point
+                    at an empty folder to record a full from-scratch install.
   --all             include items already configured (default: skip them)
   --print-plan      print the plan and exit (no TUI, no execution)
   --yes             run the setup headlessly, no TUI
@@ -42,6 +42,9 @@ if (has('--print-plan') || has('--yes')) {
   const { existsSync } = await import('node:fs');
   const { join } = await import('node:path');
   const state = includeAll ? emptyState : loadState(loadFrom);
+  // Sandbox: --load-from isolates the whole run into <dir> — claude config and
+  // user-file writes go there, the real machine is untouched.
+  const claudeEnv = loadFrom ? { CLAUDE_CONFIG_DIR: join(loadFrom, '.claude') } : undefined;
   const take = (arr, kind) => arr.filter((x) => x.selected && !state.isPresent(kind, x));
   const plan = buildPlan({
     marketplaces: take(marketplaces, 'marketplaces').map((x) => x.id),
@@ -49,6 +52,7 @@ if (has('--print-plan') || has('--yes')) {
     mcp: take(mcpServers, 'mcp'),
     userSkills: take(userSkills, 'userSkills'),
     scaffold: scaffold.filter((x) => x.selected && (includeAll || !existsSync(join(targetDir, x.path)))),
+    homeBase: loadFrom,
     targetDir,
   });
   if (has('--print-plan')) {
@@ -62,7 +66,7 @@ if (has('--print-plan') || has('--yes')) {
     }
     process.exit(0);
   }
-  process.exit(await runHeadless(plan, { dryRun }));
+  process.exit(await runHeadless(plan, { dryRun, claudeEnv }));
 }
 
 if (!process.stdin.isTTY) {
@@ -75,4 +79,4 @@ const state = includeAll ? emptyState : loadState(loadFrom);
 const React = (await import('react')).default;
 const { render } = await import('ink');
 const App = (await import('../src/app.js')).default;
-render(React.createElement(App, { targetDir, dryRunDefault: dryRun, state, includeAll, detectFrom: loadFrom }));
+render(React.createElement(App, { targetDir, dryRunDefault: dryRun, state, includeAll, detectFrom: loadFrom, sandbox: loadFrom }));

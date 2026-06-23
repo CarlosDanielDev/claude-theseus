@@ -75,9 +75,11 @@ export function buildPlan(sel) {
     }
     tasks.push({ kind: 'cmd', label: `mcp add ${s.id}${suffix}`, argv });
   }
+  const home = sel.homeBase || homedir();
   for (const u of sel.userSkills || []) {
-    const dest = join(homedir(), u.dest);
-    tasks.push({ kind: 'copy', label: `user skill ${u.id} -> ~/${u.dest}`, src: u.src, path: dest, dir: !!u.dir });
+    const dest = join(home, u.dest);
+    const shown = sel.homeBase ? dest : '~/' + u.dest;
+    tasks.push({ kind: 'copy', label: `user skill ${u.id} -> ${shown}`, src: u.src, path: dest, dir: !!u.dir });
   }
   const dir = sel.targetDir || '.';
   for (const f of sel.scaffold) {
@@ -87,7 +89,7 @@ export function buildPlan(sel) {
 }
 
 // Run one task. onLog(line) streams output. Resolves {ok, code}.
-export function runTask(task, { dryRun, onLog }) {
+export function runTask(task, { dryRun, onLog, claudeEnv }) {
   if (dryRun) {
     const preview = task.kind === 'cmd' ? `claude ${task.argv.map(maskKey).join(' ')}`
       : task.kind === 'copy' ? `copy ${task.dir ? 'dir ' : ''}${task.src} -> ${task.path}`
@@ -122,21 +124,36 @@ export function runTask(task, { dryRun, onLog }) {
   }
   return new Promise((res) => {
     // cross-spawn resolves the claude.cmd/.ps1 shim on Windows without a shell.
-    const child = spawn('claude', task.argv, { stdio: ['ignore', 'pipe', 'pipe'] });
-    const tail = (buf) => buf.toString().split('\n').filter(Boolean).forEach((l) => onLog?.(l));
+    const env = claudeEnv ? { ...process.env, ...claudeEnv } : process.env;
+    const child = spawn('claude', task.argv, { stdio: ['ignore', 'pipe', 'pipe'], env });
+    let out = '';
+    const tail = (buf) => {
+      const s = buf.toString();
+      out += s;
+      s.split('\n').filter(Boolean).forEach((l) => onLog?.(l));
+    };
     child.stdout.on('data', tail);
     child.stderr.on('data', tail);
     child.on('error', (err) => { onLog?.(String(err.message || err)); res({ ok: false, code: 127 }); });
-    child.on('close', (code) => res({ ok: code === 0, code: code ?? 1 }));
+    child.on('close', (code) => {
+      if (code === 0) return res({ ok: true, code: 0 });
+      // Idempotent: a marketplace/plugin/server that's already configured is the
+      // desired end state, not a failure. claude exits non-zero with no --force.
+      if (/already exists|already installed|already added/i.test(out)) {
+        onLog?.('already configured — skipped');
+        return res({ ok: true, code: 0, skipped: true });
+      }
+      res({ ok: false, code: code ?? 1 });
+    });
   });
 }
 
 // Headless runner for --print-plan / --yes (no TUI). Returns exit code.
-export async function runHeadless(plan, { dryRun }) {
+export async function runHeadless(plan, { dryRun, claudeEnv }) {
   let failures = 0;
   for (const task of plan) {
     process.stdout.write(`• ${task.label}\n`);
-    const { ok } = await runTask(task, { dryRun, onLog: (l) => process.stdout.write(`    ${l}\n`) });
+    const { ok } = await runTask(task, { dryRun, claudeEnv, onLog: (l) => process.stdout.write(`    ${l}\n`) });
     if (!ok) { failures++; process.stdout.write(`    ✗ failed\n`); }
   }
   return failures === 0 ? 0 : 1;

@@ -48,8 +48,10 @@ const STEPS = [
   { key: 'scaffold', title: 'Project .claude/ scaffold', verb: 'write' },
 ];
 
-export default function App({ targetDir, dryRunDefault, state = emptyState, includeAll = false, detectFrom = null }) {
+export default function App({ targetDir, dryRunDefault, state = emptyState, includeAll = false, detectFrom = null, sandbox = null }) {
   const { exit } = useApp();
+  // --load-from sandbox: claude config + user-file writes redirect into <dir>.
+  const claudeEnv = sandbox ? { CLAUDE_CONFIG_DIR: pjoin(sandbox, '.claude') } : undefined;
   // Mark already-configured items and deselect them by default (skip to patch
   // only the rest). --all (includeAll) keeps the original selections.
   const init = (arr, kind) =>
@@ -84,6 +86,7 @@ export default function App({ targetDir, dryRunDefault, state = emptyState, incl
     mcp: lists.mcp.filter((x) => x.selected),
     userSkills: lists.userSkills.filter((x) => x.selected),
     scaffold: lists.scaffold.filter((x) => x.selected),
+    homeBase: sandbox,
     targetDir,
   });
 
@@ -99,6 +102,7 @@ export default function App({ targetDir, dryRunDefault, state = emptyState, incl
       // eslint-disable-next-line no-await-in-loop
       const { ok } = await runTask(tasks[i], {
         dryRun,
+        claudeEnv,
         onLog: (line) =>
           setStatuses((s) => s.map((x, j) => (j === i ? { ...x, log: line } : x))),
       });
@@ -262,6 +266,7 @@ export default function App({ targetDir, dryRunDefault, state = emptyState, incl
                 : html`<${Text} color=${color[s.state]}>${icon[s.state]} <//>`}
               <${Text} color=${s.state === 'fail' ? 'red' : s.state === 'run' ? 'cyan' : s.state === 'ok' ? 'green' : 'gray'} bold=${s.state === 'run'}>${s.label}<//>
               ${s.state === 'run' && s.log ? html`<${Text} dimColor>  ${s.log.slice(0, 50)}<//>` : ''}
+              ${s.state === 'fail' && s.log ? html`<${Text} color="red">  → ${s.log.slice(0, 60)}<//>` : ''}
             <//>
           `)}
         <//>
