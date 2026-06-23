@@ -13,6 +13,10 @@ Usage: claude-theseus [options]
   (no options)      launch the interactive TUI wizard
   --dry-run         start the wizard in dry-run mode (preview commands)
   --target <dir>    where to scaffold .claude/ files (default: cwd)
+  --load-from <dir> detect existing config against <dir> as a fake $HOME
+                    instead of the real machine (point at an empty folder to
+                    show a full setup — for demos/recordings). Detection only;
+                    writes still go to the real targets.
   --all             include items already configured (default: skip them)
   --print-plan      print the plan and exit (no TUI, no execution)
   --yes             run the setup headlessly, no TUI
@@ -28,6 +32,7 @@ missing. Pass --all to re-apply everything.
 const targetDir = val('--target', process.cwd());
 const dryRun = has('--dry-run');
 const includeAll = has('--all');
+const loadFrom = val('--load-from', undefined);
 
 // Headless paths: no TUI, scriptable, also the smoke-test surface.
 if (has('--print-plan') || has('--yes')) {
@@ -36,7 +41,7 @@ if (has('--print-plan') || has('--yes')) {
   const { loadState, emptyState } = await import('../src/state.js');
   const { existsSync } = await import('node:fs');
   const { join } = await import('node:path');
-  const state = includeAll ? emptyState : loadState();
+  const state = includeAll ? emptyState : loadState(loadFrom);
   const take = (arr, kind) => arr.filter((x) => x.selected && !state.isPresent(kind, x));
   const plan = buildPlan({
     marketplaces: take(marketplaces, 'marketplaces').map((x) => x.id),
@@ -66,8 +71,8 @@ if (!process.stdin.isTTY) {
 }
 
 const { loadState, emptyState } = await import('../src/state.js');
-const state = includeAll ? emptyState : loadState();
+const state = includeAll ? emptyState : loadState(loadFrom);
 const React = (await import('react')).default;
 const { render } = await import('ink');
 const App = (await import('../src/app.js')).default;
-render(React.createElement(App, { targetDir, dryRunDefault: dryRun, state, includeAll }));
+render(React.createElement(App, { targetDir, dryRunDefault: dryRun, state, includeAll, detectFrom: loadFrom }));

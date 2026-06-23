@@ -46,7 +46,7 @@ const STEPS = [
   { key: 'scaffold', title: 'Project .claude/ scaffold', verb: 'write' },
 ];
 
-export default function App({ targetDir, dryRunDefault, state = emptyState, includeAll = false }) {
+export default function App({ targetDir, dryRunDefault, state = emptyState, includeAll = false, detectFrom = null }) {
   const { exit } = useApp();
   // Mark already-configured items and deselect them by default (skip to patch
   // only the rest). --all (includeAll) keeps the original selections.
@@ -138,6 +138,7 @@ export default function App({ targetDir, dryRunDefault, state = emptyState, incl
     <${Box} flexDirection="column" marginBottom=${1}>
       <${Gradient} name="atlas"><${Text} bold>  THESEUS · Claude Code Setup Wizard<//><//>
       <${Text} dimColor>  rebuild marketplaces · plugins · MCP · project scaffold<//>
+      ${detectFrom ? html`<${Text} color="magenta">  demo: detecting against ${detectFrom} (writes go to real targets)<//>` : ''}
     <//>
   `;
 

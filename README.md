@@ -51,11 +51,28 @@ everything regardless.
 `↑↓` move · `space` toggle · `a` all · `n` none · `→` next · `←` back ·
 `d` dry-run · `enter`/`r` run · `q` quit
 
+## Demo / recording a full run
+
+Detection reads your real machine, so on a configured box the plan is nearly
+empty. To show the whole flow, point detection at an empty folder:
+
+```bash
+mkdir /tmp/empty-home
+node bin/cli.js --load-from /tmp/empty-home --target /tmp/empty-home/proj --dry-run
+```
+
+`--load-from` treats the folder as a fake `$HOME` (via `CLAUDE_CONFIG_DIR`) for
+**detection only** — everything reads as not-configured, so all 32 actions show.
+Pair with `--dry-run` so the recording touches nothing real. The banner notes
+the demo source.
+
 ## Flags
 
 ```
 --dry-run         start in dry-run (preview, no execution)
 --target <dir>    where to scaffold .claude/ (default: cwd)
+--load-from <dir> detect against <dir> as a fake $HOME (demo); detection only
+--all             include items already configured (default: skip)
 --print-plan      print the default plan and exit (no TUI)
 --yes             run the full default setup headlessly
 -h, --help        help
