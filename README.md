@@ -30,8 +30,8 @@ Walks five steps, each a checkbox list preselected to the full setup:
 4. **User files** — copies loose `~/.claude/` skills, commands, and agents
    vendored under `assets/` (council, obsidian-brain, the `/obsidian:*`
    commands, schedule-day, error-log-cleaner) — none available from a marketplace
-5. **Project scaffold** — writes a Maestro-style `.claude/` (skills, commands,
-   agents) into the target project
+5. **Project scaffold** — writes a starter `.claude/` (skills, commands,
+   agents) into the target project — neutral templates to edit per project
 
 Highlight any plugin / server / skill and a panel shows **why · for who · what ·
 goal · measurable impact**. Then a review screen lists every action before

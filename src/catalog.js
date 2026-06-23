@@ -270,22 +270,24 @@ export const userSkills = [
 ];
 
 // Project-local .claude/ scaffold. Each entry is one file written into the
-// target project. Content is intentionally terse-but-real (Maestro-style).
+// target project. Content is a neutral starter — edit per project.
 export const scaffold = [
   {
     path: '.claude/skills/project-patterns/SKILL.md',
     selected: true,
     content: `---
 name: project-patterns
-description: Use when working in this project — ratatui TUI, tokio async, stream-json parsing conventions.
+description: Use when working in this project — record its conventions here so Claude follows them.
 ---
 
 # Project Patterns
 
-- TUI: ratatui + crossterm. Keep render pure; mutate state in the update step.
-- Async: tokio. One runtime, spawn tasks; never block the reactor.
-- IO: parse Claude stream-json line-by-line; tolerate partial frames.
-- Errors: \`anyhow\` at boundaries, \`thiserror\` for typed domain errors.
+Replace the examples below with this project's real conventions.
+
+- Architecture: name the layers and where logic belongs.
+- Concurrency/IO: the model to follow and what to never do.
+- Errors: how failures are represented and surfaced.
+- Testing: what a change must run before it's "done".
 `,
   },
   {
