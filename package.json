@@ -1,6 +1,6 @@
 {
   "name": "claude-theseus",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Wizard TUI that rebuilds a Claude Code environment (marketplaces, plugins, MCP servers, project .claude/ scaffold) from a known-good setup.",
   "type": "module",
   "bin": {

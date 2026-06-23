@@ -13,11 +13,24 @@ import {
 
 const html = htm.bind(React.createElement);
 
+// Cap the playfield so it stays a tight, snappy board instead of sprawling
+// across a huge terminal (which left the snake a speck in a void and made Ink
+// re-diff a giant tree every tick → flicker). Centered, the snake fills it.
+const MAX_COLS = 44;
+const MAX_ROWS = 20;
+const boardCols = (termCols) => Math.max(MIN_COLS, Math.min(termCols - 2, MAX_COLS));
+const boardRows = (termRows) => Math.max(MIN_ROWS, Math.min(termRows - 6, MAX_ROWS));
+
 // Session-only high score — no persistence, resets when the process exits.
 let bestScore = 0;
 
-const HEAD_GLYPH = { up: '▲', down: '▼', left: '◀', right: '▶' };
+// Head and body share the SAME full-cell glyph so the snake never clips or
+// changes size between horizontal and vertical movement (directional triangle
+// glyphs had different widths → a gap that shifted when you turned). The head is
+// distinguished by a brighter colour, not a different shape.
 const BODY_PALETTE = ['#34d399', '#10b981', '#059669']; // brightest near the head
+const HEAD_COLOR = '#d1fae5';
+const DEAD_COLOR = '#f87171';
 
 function getTermDims() {
   return { cols: process.stdout.columns || 80, rows: process.stdout.rows || 24 };
@@ -44,14 +57,14 @@ function rowSpans(line, y, state, foodPulse) {
     let color = null;
     let bold = false;
     if (head && x === head.x && y === head.y) {
-      ch = HEAD_GLYPH[state.direction] || '█';
-      color = state.alive ? '#a7f3d0' : '#f87171';
+      // keep the body's '█' — same cell footprint, no clip on turns
+      color = state.alive ? HEAD_COLOR : DEAD_COLOR;
       bold = true;
     } else if (c === '█') {
       const idx = segIndex.get(x + ',' + y) ?? 0;
       color = BODY_PALETTE[Math.min(idx, BODY_PALETTE.length - 1)];
     } else if (c === '●') {
-      ch = foodPulse ? '◆' : '●';
+      // pulse by colour only — swapping the glyph (●/◆) changed its size
       color = foodPulse ? '#fbbf24' : '#ef4444';
       bold = true;
     }
@@ -71,7 +84,7 @@ function GameView({ state, frame, foodPulse }) {
   const level = Math.floor(state.score / 5) + 1;
   const border = state.alive ? 'green' : 'red';
   return html`
-    <${Box} flexDirection="column">
+    <${Box} flexDirection="column" alignItems="center" marginTop=${1}>
       <${Box}>
         <${Text} color="#fbbf24" bold>● ${state.score}<//>
         <${Text} dimColor>  ·  <//>
@@ -104,7 +117,7 @@ export default function SnakeGame({ onExit, termCols, termRows }) {
       setError('Terminal too small (' + tc + 'x' + tr + '). Need at least ' + MIN_COLS + 'x' + MIN_ROWS + '.');
       return;
     }
-    let state = createGameState(tc - 2, tr - 6);
+    let state = createGameState(boardCols(tc), boardRows(tr));
     stateRef.current = state;
     setFrame((f) => f + 1);
 
@@ -124,8 +137,8 @@ export default function SnakeGame({ onExit, termCols, termRows }) {
 
     function onResize() {
       const dims = getTermDims();
-      const newCols = dims.cols - 2;
-      const newRows = dims.rows - 6;
+      const newCols = boardCols(dims.cols);
+      const newRows = boardRows(dims.rows);
       if (!stateRef.current) return;
       const old = stateRef.current;
       stateRef.current = {
