@@ -1,18 +1,37 @@
-# theseus
+<div align="center">
 
-A wizard TUI that rebuilds a Claude Code environment from a known-good setup —
-marketplaces, plugins, MCP servers, and a project `.claude/` scaffold — in one
-guided pass.
+```
+   ╔╦╗╦ ╦╔═╗╔═╗╔═╗╦ ╦╔═╗
+    ║ ╠═╣║╣ ╚═╗║╣ ║ ║╚═╗
+    ╩ ╩ ╩╚═╝╚═╝╚═╝╚═╝╚═╝
+```
 
-Named for the ship of Theseus: replace every plank and it's still your setup.
+### 🚢 rebuild your entire Claude Code setup in one guided pass
 
-## Run
+A wizard **TUI** that registers marketplaces, installs plugins, wires MCP
+servers, copies your loose skills/commands/agents, and scaffolds a project
+`.claude/` — interactively, idempotently, and with a little juice.
 
-No install or registry needed — run straight from GitHub:
+*Named for the ship of Theseus: replace every plank and it's still your setup.*
+
+<br/>
+
+[![release](https://img.shields.io/github/v/release/CarlosDanielDev/claude-theseus?style=for-the-badge&color=06b6d4)](https://github.com/CarlosDanielDev/claude-theseus/releases)
+[![node](https://img.shields.io/badge/node-%E2%89%A518-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org)
+[![no build](https://img.shields.io/badge/build-none-10b981?style=for-the-badge)](#)
+[![runs from github](https://img.shields.io/badge/npx-github-8b5cf6?style=for-the-badge)](#-run)
+
+</div>
+
+---
+
+## ⚡ Run
+
+No install, no registry — straight from GitHub:
 
 ```bash
-npx github:CarlosDanielDev/claude-theseus          # latest main
-npx github:CarlosDanielDev/claude-theseus#v0.1.0   # pinned version
+npx github:CarlosDanielDev/claude-theseus          # latest
+npx github:CarlosDanielDev/claude-theseus#v0.2.1   # pinned
 ```
 
 From a clone:
@@ -21,83 +40,125 @@ From a clone:
 npm install && npm start
 ```
 
-If/when published to npm, `npx claude-theseus` works too.
+> Pure JS, **zero build step** — runs directly from source (htm instead of JSX).
 
-## What it does
+---
 
-Walks five steps, each a checkbox list preselected to the full setup:
+## 🧭 What it does
 
-1. **Marketplaces** — `claude plugin marketplace add` for 5 registries
-2. **Plugins** — `claude plugin install` for the core 14 (superpowers, caveman,
-   ponytail, figma, code-review, security-guidance, LSP backends, …)
-3. **MCP servers** — `claude mcp add` for obsidian / context7 / figma. For
-   obsidian the wizard **auto-detects the existing Local REST API key** from
-   your vault's `data.json` and injects it (masked in all previews, never
-   committed). It does not *generate* a key — Obsidian's plugin mints that
-   in-app; if none exists, enable the Local REST API plugin first or set
-   `OBSIDIAN_API_KEY`.
-4. **User files** — copies loose `~/.claude/` skills, commands, and agents
-   vendored under `assets/` (council, obsidian-brain, the `/obsidian:*`
-   commands, schedule-day, error-log-cleaner) — none available from a marketplace
-5. **Project scaffold** — writes a starter `.claude/` (skills, commands,
-   agents) into the target project — neutral templates to edit per project
+Five steps, each a checkbox list preselected to a known-good setup:
 
-Highlight any plugin / server / skill and a panel shows **why · for who · what ·
-goal · measurable impact**. Then a review screen lists every action before
-anything runs.
+| # | Step | Runs |
+|---|------|------|
+| 1 | 🏬 **Marketplaces** | `claude plugin marketplace add` × 5 registries |
+| 2 | 🧩 **Plugins** | `claude plugin install` × 14 (superpowers, caveman, ponytail, figma, code-review, security-guidance, LSP backends, …) |
+| 3 | 🔌 **MCP servers** | `claude mcp add` for obsidian / context7 / figma |
+| 4 | 📂 **User files** | copies loose `~/.claude/` skills, commands & agents vendored under `assets/` |
+| 5 | 🏗️ **Project scaffold** | writes a starter `.claude/` (skills/commands/agents) into the target |
 
-## Idempotent — patches only what's missing
+Highlight **any** item and a panel explains it:
 
-On launch the wizard probes your machine (`claude plugin marketplace list`,
-`plugin list`, `mcp list`, and file existence) and **deselects anything already
-configured** — marketplaces, plugins, MCP servers, user files, and scaffold
-files that already exist at the target. Configured rows show `✓ configured` and
-are skipped. Re-run it any time to fill only the gaps. Pass `--all` to re-apply
-everything regardless.
+```
+╭ superpowers@claude-plugins-official ─────────────────╮
+│ Why      Claude drifts into ad-hoc work without ...  │
+│ For who  Any dev who wants disciplined workflows.    │
+│ What     Skills + enforcement: TDD, planning ...     │
+│ Goal     Make Claude follow a method before code.    │
+│ Impact   Fewer rework loops — plans/tests first.     │
+╰──────────────────────────────────────────────────────╯
+```
 
-## Controls
+All **35** items carry that **why · for who · what · goal · measurable impact** card.
+A review screen lists every action before anything runs.
 
-`↑↓` move · `space` toggle · `a` all · `n` none · `→` next · `←` back ·
-`d` dry-run · `enter`/`r` run · `q` quit
+---
 
-## Demo / recording a full run
+## ♻️ Idempotent — patches only what's missing
 
-Detection reads your real machine, so on a configured box the plan is nearly
-empty. To show the whole flow, point detection at an empty folder:
+On launch it probes your machine — `plugin marketplace list`, `plugin list`,
+`mcp list`, and file existence — and **deselects anything already configured**.
+
+```
+Step 2/5 · Plugins · 2/14 selected · 12 configured · DRY-RUN
+  ❯ ◇ firebase@claude-plugins-official ✓ configured
+    ◆ rust-analyzer-lsp@claude-plugins-official
+```
+
+Configured rows read `✓ configured` and drop out of the plan. Re-run anytime to
+fill the gaps — or `--all` to re-apply everything.
+
+---
+
+## 🔐 Obsidian, handled
+
+For the Obsidian MCP server the wizard **auto-detects the existing Local REST
+API key** from your vault's `data.json` and injects it — **masked in every
+preview, never written to the repo**.
+
+It does *not* generate a key (Obsidian's plugin mints that in-app). No key found →
+clear hint to enable the plugin or set `OBSIDIAN_API_KEY`.
+
+---
+
+## 🎬 Demo / recording
+
+A configured box has a near-empty plan. Point detection at an empty folder to
+show the full flow:
 
 ```bash
 mkdir /tmp/empty-home
-node bin/cli.js --load-from /tmp/empty-home --target /tmp/empty-home/proj --dry-run
+npx github:CarlosDanielDev/claude-theseus \
+  --load-from /tmp/empty-home --target /tmp/empty-home/proj --dry-run
 ```
 
 `--load-from` treats the folder as a fake `$HOME` (via `CLAUDE_CONFIG_DIR`) for
 **detection only** — everything reads as not-configured, so all 32 actions show.
-Pair with `--dry-run` so the recording touches nothing real. The banner notes
-the demo source.
+`--dry-run` keeps the recording harmless. 🐍 *Psst — the Konami code works in the wizard.*
 
-## Flags
+---
+
+## ⌨️ Controls
+
+| Keys | Action | | Keys | Action |
+|------|--------|-|------|--------|
+| `↑ ↓` | move | | `→` / `enter` | next step |
+| `space` | toggle | | `←` | back |
+| `a` / `n` | all / none | | `d` | toggle dry-run |
+| `r` / `enter` | run (on review) | | `q` | quit |
+
+---
+
+## 🚩 Flags
 
 ```
---dry-run         start in dry-run (preview, no execution)
+--dry-run         preview only, execute nothing
 --target <dir>    where to scaffold .claude/ (default: cwd)
 --load-from <dir> detect against <dir> as a fake $HOME (demo); detection only
 --all             include items already configured (default: skip)
---print-plan      print the default plan and exit (no TUI)
---yes             run the full default setup headlessly
+--print-plan      print the plan and exit (no TUI)
+--yes             run headlessly, no TUI
 -h, --help        help
 ```
 
-`--print-plan` and `--yes` are scriptable, no-TTY paths. Combine `--yes
---dry-run` to preview the whole run without touching anything.
+`--print-plan` and `--yes` are scriptable, no-TTY paths. `--yes --dry-run`
+previews the whole run without touching anything.
 
-## Edit the setup
+---
 
-Everything lives in `src/catalog.js` — add a marketplace, flip a plugin's
-default `selected`, change an MCP URL, or add a scaffold file. No other code
-changes needed.
+## 🛠️ Make it yours
 
-## Test
+Everything lives in **`src/catalog.js`** — add a marketplace, flip a plugin's
+default `selected`, change an MCP URL, drop in a scaffold file. No other code to
+touch. Loose skills are vendored under `assets/`.
+
+---
+
+## ✅ Test
 
 ```bash
-npm test    # plan shape + real scaffold writes, no CLI/network
+npm test    # plan shape + real scaffold writes + injection guard, then the snake suite
 ```
+
+<div align="center">
+<sub>built plank by plank · runs on Node ≥18 · no build step</sub>
+</div>
