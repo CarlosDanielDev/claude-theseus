@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Box, Text, useApp, useInput } from 'ink';
 import Spinner from 'ink-spinner';
 import Gradient from 'ink-gradient';
@@ -8,6 +8,8 @@ import { join as pjoin } from 'node:path';
 import { marketplaces, plugins, mcpServers, userSkills, scaffold } from './catalog.js';
 import { buildPlan, runTask } from './runner.js';
 import { emptyState } from './state.js';
+import { createKonamiDetector } from './konami.js';
+import SnakeGame from './snake-tui.js';
 
 const html = htm.bind(React.createElement);
 
@@ -70,6 +72,8 @@ export default function App({ targetDir, dryRunDefault, state = emptyState, incl
   const [phase, setPhase] = useState('select'); // select | review | run | done
   const [dryRun, setDryRun] = useState(dryRunDefault);
   const [statuses, setStatuses] = useState([]); // {label, state:'pending'|'run'|'ok'|'fail', log}
+  const [snakeActive, setSnakeActive] = useState(false);
+  const konamiRef = useRef(createKonamiDetector());
 
   const step = STEPS[stepIdx];
   const items = phase === 'select' ? lists[step.key] : [];
@@ -104,8 +108,28 @@ export default function App({ targetDir, dryRunDefault, state = emptyState, incl
   }
 
   useInput((input, key) => {
-    if (input === 'q' || (key.ctrl && input === 'c')) return exit();
+    if (key.ctrl && input === 'c') return exit();
+
+    if (snakeActive) return;
+
+    if (input === 'q' && !snakeActive) return exit();
     if (input === 'd' && phase !== 'run') setDryRun((v) => !v);
+
+    // Konami detection — works in select, review, and done phases
+    if (phase !== 'run') {
+      let arrowDir = null;
+      if (key.upArrow) arrowDir = 'up';
+      else if (key.downArrow) arrowDir = 'down';
+      else if (key.leftArrow) arrowDir = 'left';
+      else if (key.rightArrow) arrowDir = 'right';
+
+      if (arrowDir && konamiRef.current(arrowDir)) {
+        if (process.stdin.isTTY) {
+          setSnakeActive(true);
+          return;
+        }
+      }
+    }
 
     if (phase === 'select') {
       const list = lists[step.key];
@@ -134,6 +158,10 @@ export default function App({ targetDir, dryRunDefault, state = emptyState, incl
   });
 
   // ---- render ----
+  if (snakeActive) {
+    return html`<${SnakeGame} onExit=${() => setSnakeActive(false)} />`;
+  }
+
   const header = html`
     <${Box} flexDirection="column" marginBottom=${1}>
       <${Gradient} name="atlas"><${Text} bold>  THESEUS · Claude Code Setup Wizard<//><//>
