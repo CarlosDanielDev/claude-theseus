@@ -3,8 +3,11 @@ import { Box, Text, useApp, useInput } from 'ink';
 import Spinner from 'ink-spinner';
 import Gradient from 'ink-gradient';
 import htm from 'htm';
+import { existsSync } from 'node:fs';
+import { join as pjoin } from 'node:path';
 import { marketplaces, plugins, mcpServers, userSkills, scaffold } from './catalog.js';
 import { buildPlan, runTask } from './runner.js';
+import { emptyState } from './state.js';
 
 const html = htm.bind(React.createElement);
 
@@ -43,14 +46,24 @@ const STEPS = [
   { key: 'scaffold', title: 'Project .claude/ scaffold', verb: 'write' },
 ];
 
-export default function App({ targetDir, dryRunDefault }) {
+export default function App({ targetDir, dryRunDefault, state = emptyState, includeAll = false }) {
   const { exit } = useApp();
+  // Mark already-configured items and deselect them by default (skip to patch
+  // only the rest). --all (includeAll) keeps the original selections.
+  const init = (arr, kind) =>
+    arr.map((x) => {
+      const present = state.isPresent(kind, x);
+      return { ...x, present, selected: includeAll ? x.selected : x.selected && !present };
+    });
   const [lists, setLists] = useState({
-    marketplaces: clone(marketplaces),
-    plugins: clone(plugins),
-    mcp: clone(mcpServers),
-    userSkills: clone(userSkills),
-    scaffold: clone(scaffold),
+    marketplaces: init(marketplaces, 'marketplaces'),
+    plugins: init(plugins, 'plugins'),
+    mcp: init(mcpServers, 'mcp'),
+    userSkills: init(userSkills, 'userSkills'),
+    scaffold: scaffold.map((x) => {
+      const present = existsSync(pjoin(targetDir, x.path));
+      return { ...x, present, selected: includeAll ? x.selected : x.selected && !present };
+    }),
   });
   const [stepIdx, setStepIdx] = useState(0);
   const [cursor, setCursor] = useState(0);
@@ -133,21 +146,24 @@ export default function App({ targetDir, dryRunDefault }) {
   if (phase === 'select') {
     const list = lists[step.key];
     const count = list.filter((x) => x.selected).length;
+    const configured = list.filter((x) => x.present).length;
     return html`
       <${Box} flexDirection="column" padding=${1}>
         ${header}
         <${Box}>
           <${Text}>Step ${stepIdx + 1}/${STEPS.length} · <//>
           <${Text} bold color="cyan">${step.title}<//>
-          <${Text}> · ${count}/${list.length} selected · <//>
-          ${modeBadge}
+          <${Text}> · ${count}/${list.length} selected<//>
+          ${configured ? html`<${Text} color="green"> · ${configured} configured<//>` : ''}
+          <${Text}> · <//>${modeBadge}
         <//>
         <${Box} flexDirection="column" marginTop=${1}>
           ${list.map((it, i) => html`
             <${Box} key=${i}>
               <${Text} color=${i === cursor ? 'cyan' : undefined}>${i === cursor ? '❯ ' : '  '}<//>
               <${Text} color=${it.selected ? 'green' : 'gray'}>${it.selected ? '◆' : '◇'} <//>
-              <${Text}>${labelOf(step.key, it)}<//>
+              <${Text} dimColor=${it.present && !it.selected}>${labelOf(step.key, it)}<//>
+              ${it.present ? html`<${Text} color="green"> ✓ configured<//>` : ''}
               <${Text} dimColor>${it.note ? '  — ' + it.note : ''}<//>
             <//>
           `)}

@@ -37,6 +37,15 @@ Highlight any plugin / server / skill and a panel shows **why · for who · what
 goal · measurable impact**. Then a review screen lists every action before
 anything runs.
 
+## Idempotent — patches only what's missing
+
+On launch the wizard probes your machine (`claude plugin marketplace list`,
+`plugin list`, `mcp list`, and file existence) and **deselects anything already
+configured** — marketplaces, plugins, MCP servers, user files, and scaffold
+files that already exist at the target. Configured rows show `✓ configured` and
+are skipped. Re-run it any time to fill only the gaps. Pass `--all` to re-apply
+everything regardless.
+
 ## Controls
 
 `↑↓` move · `space` toggle · `a` all · `n` none · `→` next · `←` back ·
