@@ -227,31 +227,52 @@ export default function App({ targetDir, dryRunDefault, state = emptyState, incl
   }
 
   if (phase === 'run' || phase === 'done') {
-    const icon = { pending: '·', run: null, ok: '✔', fail: '✗' };
+    const icon = { pending: '○', run: null, ok: '✔', fail: '✗' };
     const color = { pending: 'gray', ok: 'green', fail: 'red' };
+    const total = statuses.length;
     const done = statuses.filter((s) => s.state === 'ok' || s.state === 'fail').length;
     const failed = statuses.filter((s) => s.state === 'fail').length;
+
+    // progress bar
+    const W = 28;
+    const fill = total ? Math.round((W * done) / total) : 0;
+    const pct = total ? Math.round((100 * done) / total) : 0;
+    const barColor = failed ? 'yellow' : phase === 'done' ? 'green' : 'cyan';
+    const bar = html`
+      <${Text} color=${barColor}>${'▰'.repeat(fill)}<//><${Text} dimColor>${'▱'.repeat(W - fill)}<//>
+    `;
+
     return html`
       <${Box} flexDirection="column" padding=${1}>
         ${header}
         <${Box}>
-          <${Text} bold>${phase === 'done' ? 'Done' : 'Running'} — ${done}/${statuses.length}<//>
+          <${Text} bold>${phase === 'done' ? 'Finished' : 'Applying'}<//>
           <${Text}> · <//>${modeBadge}
+          <${Text}> · ${done}/${total}<//>
           ${failed ? html`<${Text} color="red"> · ${failed} failed<//>` : ''}
+        <//>
+        <${Box} marginTop=${1}>
+          ${bar}<${Text} bold color=${barColor}>  ${pct}%<//>
         <//>
         <${Box} flexDirection="column" marginTop=${1}>
           ${statuses.map((s, i) => html`
             <${Box} key=${i}>
               ${s.state === 'run'
-                ? html`<${Text} color="yellow"><${Spinner} type="dots"/> <//>`
+                ? html`<${Text} color="cyan"><${Spinner} type="dots"/> <//>`
                 : html`<${Text} color=${color[s.state]}>${icon[s.state]} <//>`}
-              <${Text} color=${s.state === 'fail' ? 'red' : undefined}>${s.label}<//>
+              <${Text} color=${s.state === 'fail' ? 'red' : s.state === 'run' ? 'cyan' : s.state === 'ok' ? 'green' : 'gray'} bold=${s.state === 'run'}>${s.label}<//>
               ${s.state === 'run' && s.log ? html`<${Text} dimColor>  ${s.log.slice(0, 50)}<//>` : ''}
             <//>
           `)}
         <//>
         ${phase === 'done'
-          ? html`<${Box} marginTop=${1}><${Text} color=${failed ? 'yellow' : 'green'}>${failed ? 'Completed with errors. ' : 'All done. '}<//><${Text} dimColor>press enter to exit<//><//>`
+          ? html`
+            <${Box} marginTop=${1} flexDirection="column">
+              <${Gradient} name=${failed ? 'morning' : 'cristal'}>
+                <${Text} bold>${failed ? `  ⚠  DONE WITH ${failed} ERROR${failed > 1 ? 'S' : ''}` : '  ✓  ALL DONE — environment rebuilt'}<//>
+              <//>
+              <${Text} dimColor>  ${total - failed}/${total} applied${dryRun ? ' (dry-run — nothing changed)' : ''} · press enter to exit<//>
+            <//>`
           : ''}
       <//>
     `;
